@@ -5,13 +5,14 @@ using HutongGames.PlayMaker.Actions;
 using Vasi;
 using System.Reflection;
 using System.Collections;
+using CustomKnight;
 namespace QuirrelFlower
 {
     public class QuirrelFlower:Mod,ILocalSettings<Setting>
     {
         public override string GetVersion()
         {
-            return "1.0";
+            return "1.1";
         }
         private Texture2D QuirrelTex;
         public static Setting LS = new();
@@ -47,7 +48,14 @@ namespace QuirrelFlower
                         UnityEngine.Object.Destroy(fsm);
                     }
                     quirrel.SetActive(true);
-                    quirrel.GetComponent<tk2dSprite>().GetCurrentSpriteDef().material.mainTexture = QuirrelTex;
+                    if(CKInstall())
+                    {
+                        CKReplace();
+                    }
+                    else
+                    {
+                        quirrel.GetComponent<tk2dSprite>().GetCurrentSpriteDef().material.mainTexture = QuirrelTex;
+                    }
                 }
                 GameObject.Find("quirrel_death_nail").SetActive(false);
             }
@@ -68,9 +76,19 @@ namespace QuirrelFlower
         {
             if(sheetTitle==QuirrelLang.QuirrelSheet)
             {
-                if(QuirrelLang.QLanguagesCN.Keys.Contains(key))
+               if(Language.Language.CurrentLanguage().ToString().ToLower().Equals("zh"))
                 {
-                    return QuirrelLang.QLanguagesCN[key];
+                    if (QuirrelLang.QLanguagesCN.Keys.Contains(key))
+                    {
+                        return QuirrelLang.QLanguagesCN[key];
+                    }
+                }
+                else
+                {
+                    if (QuirrelLang.QLanguagesEN.Keys.Contains(key))
+                    {
+                        return QuirrelLang.QLanguagesEN[key];
+                    }
                 }
             }
             return orig;
@@ -188,7 +206,14 @@ namespace QuirrelFlower
             HeroController.instance.gameObject.GetComponent<tk2dSpriteAnimator>().Play("Collect SD 1");
             yield return new WaitForSeconds(0.5f);
             LS.giveFlower = true;
-            quirrel.GetComponent<tk2dSprite>().GetCurrentSpriteDef().material.mainTexture = QuirrelTex;
+            if(CKInstall())
+            {
+                CKReplace();
+            }
+            else
+            {
+                quirrel.GetComponent<tk2dSprite>().GetCurrentSpriteDef().material.mainTexture = QuirrelTex;
+            }
             effect.SetActive(true);
             PlayerData.instance.SetBool(nameof(PlayerData.quirrelEpilogueCompleted), true);
             PlayerData.instance.SetBool(nameof(PlayerData.hasXunFlower), false);
@@ -216,6 +241,16 @@ namespace QuirrelFlower
             CallMethodProper cmp = state.GetAction<CallMethodProper>();
             cmp.parameters[0].stringValue = key;
             cmp.parameters[1].stringValue = QuirrelLang.QuirrelSheet;
+        }
+        private void CKReplace()
+        {
+            var skin = SkinManager.GetCurrentSkin();
+            Texture2D quirrelflowertex = skin.Exists("Quirrel_Flower.png") ? skin.GetTexture("quirrel_flower.png") : QuirrelTex;
+            SkinManager.Skinables["Quirrel"].ApplyTexture(quirrelflowertex);
+        }
+        private bool CKInstall()
+        {
+            return ModHooks.GetMod("CustomKnight") is Mod;
         }
     }
 }
