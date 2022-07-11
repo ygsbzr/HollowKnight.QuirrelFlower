@@ -1,4 +1,4 @@
-# HollowKght.QurrielFlower
+# HollowKnight.QuirrelFlower
 A little gift for qurriel，Thanks Flib's MylaFlower
 ## Credit
 Thanks XH-Saturn for drawing Quirrel Sprite
