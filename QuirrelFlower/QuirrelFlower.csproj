@@ -8,9 +8,11 @@
 	  <RootNamespace>QuirrelFlower</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\achievement.png" />
     <None Remove="Resources\Quirrel.png" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\achievement.png" />
     <EmbeddedResource Include="Resources\Quirrel.png" />
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +34,9 @@
     </Reference>
     <Reference Include="PlayMaker">
       <HintPath>..\..\1.5Moddingapi\PlayMaker.dll</HintPath>
+    </Reference>
+    <Reference Include="SFCore">
+      <HintPath>..\..\1.5Moddingapi\SFCore.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\1.5Moddingapi\UnityEngine.dll</HintPath>

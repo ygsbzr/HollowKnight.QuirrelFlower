@@ -19,6 +19,13 @@ namespace QuirrelFlower
         public const string FlowerOfferEN = "Oh, you carry a beautiful flower with you. There seems to be extraordinary power on it.";
         public const string AcceptFlowerEN = "You want to give it to me... really? I do appreciate the generosity of you, my little friend. I will take good care of it.";
         public const string DeclineFlowerEN = "Not a bad idea to keep the holy flower with you, huh? Thank you for showing me such a beautiful flower.";
+        public const string AchievementTitleKey = "Achievement_Quirrel_Flower_Title";
+        public const string AchievementDescKey = "Achievement_Quirrel_Flower_DESC";
+        public const string AchievementTitleCN = "礼物";
+        public const string AchievementDescCN = "为奎若献上一份小小的礼物";
+        public const string AchievementTitleEN = "Present";
+        public const string AchievementDescEN="Give Quirrel a little gift";
+        public const string AchievementKey = "Achievement_Quirrel_Flower";
         public static Dictionary<string, string> QLanguagesCN = new()
         {
             { RepeatKey, RepeatCN},
@@ -26,6 +33,8 @@ namespace QuirrelFlower
             { AcceptKey, AcceptFlowerCN},
             { DeclineKey, DeclineFlowerCN},
             { FlowerOfferKey, FlowerOfferCN},
+            { AchievementTitleKey,AchievementTitleCN},
+            { AchievementDescKey, AchievementDescCN},
         };
         public static Dictionary<string, string> QLanguagesEN = new()
         {
@@ -34,6 +43,8 @@ namespace QuirrelFlower
             { AcceptKey, AcceptFlowerEN },
             { DeclineKey, DeclineFlowerEN },
             { FlowerOfferKey, FlowerOfferEN },
+            { AchievementTitleKey, AchievementTitleEN },
+            { AchievementDescKey, AchievementDescEN }
         };
 
     }

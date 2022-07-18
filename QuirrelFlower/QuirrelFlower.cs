@@ -2,22 +2,27 @@
 using UnityEngine;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using Vasi;
 using System.Reflection;
 using System.Collections;
 using CustomKnight;
+using SFCore;
+using Vasi;
 namespace QuirrelFlower
 {
-    public class QuirrelFlower:Mod,ILocalSettings<Setting>
+    public class QuirrelFlower:Mod,ILocalSettings<Setting>,IGlobalSettings<GlobalSetting>
     {
         public override string GetVersion()
         {
-            return "1.1";
+            return "1.2";
         }
         private Texture2D QuirrelTex;
+        private Sprite achivesp;
         public static Setting LS = new();
+        public static GlobalSetting GS = new();
         public void OnLoadLocal(Setting s) => LS = s;
         public Setting OnSaveLocal() => LS;
+        public void OnLoadGlobal(GlobalSetting s) => GS = s;
+        public GlobalSetting OnSaveGlobal() => GS;
         public override List<(string,string)> GetPreloadNames()
         {
             return new List<(string, string)>
@@ -25,15 +30,37 @@ namespace QuirrelFlower
                 ("Town","_NPCs/Elderbug/Flower Give")
             };
         }
+        public QuirrelFlower():base("Quirrel Flower")
+        {
+            achivesp = LoadQuirrelSprite();
+            AchievementHelper.AddAchievement(QuirrelLang.AchievementKey, achivesp, QuirrelLang.AchievementTitleKey, QuirrelLang.AchievementDescKey, true);
+            ModHooks.LanguageGetHook += EditLang;
+            On.AchievementHandler.AchievementWasAwarded += CheckGiven;
+        }
         private GameObject origflowergive;
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             origflowergive = preloadedObjects["Town"]["_NPCs/Elderbug/Flower Give"];
             QuirrelTex = LoadQuirrelTex();
             On.PlayMakerFSM.Start += EditFsm;
-            ModHooks.LanguageGetHook += EditLang;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += EditQui;
             
+        }
+
+        private bool CheckGiven(On.AchievementHandler.orig_AchievementWasAwarded orig, AchievementHandler self, string key)
+        {
+            orig(self, key);
+            if(key==QuirrelLang.AchievementKey)
+            {
+                return GS.AchievementUnlocked;
+            }
+            Achievement achievement = self.achievementsList.FindAchievement(key);
+            if (achievement != null)
+            {
+                bool? flag = Platform.Current.IsAchievementUnlocked(key);
+                return flag != null && flag.Value;
+            }
+            return false;
         }
 
         private void EditQui(UnityEngine.SceneManagement.Scene arg0, UnityEngine.SceneManagement.Scene arg1)
@@ -43,6 +70,7 @@ namespace QuirrelFlower
                 GameObject quirrel = UnityEngine.Object.FindObjectsOfType<GameObject>().FirstOrDefault(x=>x.name== "Quirrel Lakeside");
                 if (LS.giveFlower)
                 {
+                    GS.AchievementUnlocked = true;
                     foreach (var fsm in quirrel.GetComponents<PlayMakerFSM>().Where(x => (x.FsmName != "Conversation Control" && x.FsmName != "npc_control")))
                     {
                         UnityEngine.Object.Destroy(fsm);
@@ -74,8 +102,6 @@ namespace QuirrelFlower
 
         private string EditLang(string key, string sheetTitle, string orig)
         {
-            if(sheetTitle==QuirrelLang.QuirrelSheet)
-            {
                if(Language.Language.CurrentLanguage().ToString().ToLower().Equals("zh"))
                 {
                     if (QuirrelLang.QLanguagesCN.Keys.Contains(key))
@@ -90,7 +116,6 @@ namespace QuirrelFlower
                         return QuirrelLang.QLanguagesEN[key];
                     }
                 }
-            }
             return orig;
         }
 
@@ -206,6 +231,7 @@ namespace QuirrelFlower
             HeroController.instance.gameObject.GetComponent<tk2dSpriteAnimator>().Play("Collect SD 1");
             yield return new WaitForSeconds(0.5f);
             LS.giveFlower = true;
+            GS.AchievementUnlocked = true;
             if(CKInstall())
             {
                 CKReplace();
@@ -217,6 +243,7 @@ namespace QuirrelFlower
             effect.SetActive(true);
             PlayerData.instance.SetBool(nameof(PlayerData.quirrelEpilogueCompleted), true);
             PlayerData.instance.SetBool(nameof(PlayerData.hasXunFlower), false);
+            quirrel.LocateMyFSM("Conversation Control").GetAction<CallMethodProper>("Talk Finish").parameters[0].stringValue = QuirrelLang.AchievementKey;
         }
         private Texture2D LoadQuirrelTex()
         {
@@ -232,6 +259,24 @@ namespace QuirrelFlower
                     tex.LoadImage(buffer);
                     s.Dispose();
                     return tex;
+                }
+            }
+            return null;
+        }
+        private Sprite LoadQuirrelSprite()
+        {
+            Assembly asm = Assembly.GetExecutingAssembly();
+            foreach (var name in asm.GetManifestResourceNames())
+            {
+                if (name.EndsWith("achievement.png"))
+                {
+                    using Stream s = asm.GetManifestResourceStream(name);
+                    byte[] buffer = new byte[s.Length];
+                    s.Read(buffer, 0, buffer.Length);
+                    Texture2D tex = new(2, 2);
+                    tex.LoadImage(buffer);
+                    s.Dispose();
+                    return Sprite.Create(tex, new(0, 0, tex.width, tex.height), new(0.5f, 0.5f));
                 }
             }
             return null;
